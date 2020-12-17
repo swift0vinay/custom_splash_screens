@@ -1,8 +1,8 @@
 name: custom_splash_screens
-description: A new Flutter package project.
+description: Custom Prebuilt Splash Screens
 version: 0.0.1
-author:
-homepage:
+author: swift0vinay
+homepage: https://github.com/swift0vinay/custom_splash_screens
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
