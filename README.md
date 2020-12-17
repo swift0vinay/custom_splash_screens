@@ -16,6 +16,18 @@ Also there are 4 Splash Screen Directions to customize animations on your own :
  - SplashScrenDirection.TTB (Top-To-Bottom)
  - SplashScrenDirection.BTT (Bottom-To-Top)
 
+Further below are the must required properties while using any of the splash screen : 
+
+ - icon
+ - label
+ - iconDuration (in Linear-Splash-Screen only)
+ - iconScaleDuration (in Scale-Splash-Screen only)
+ - labelDuration
+ - navigateTo
+ - labelDirection
+ - iconDirection (in Linear-Splash-Screen only)
+
+
 # ScaleSplashScreen
 Example : 
 
