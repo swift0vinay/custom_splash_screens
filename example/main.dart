@@ -16,9 +16,12 @@ class MyApp extends StatelessWidget {
       labelDirection: SplashScreenDirection.LTR,
       labelDuration: Duration(seconds: 2),
       navigateTo: NavigateTo(),
-      screenFunction: () async {
+      splashPageTransistion: SplashPageTransistion.SlideLeft,
+      pageTransistionDuration: Duration(seconds: 2),
+       screenFunction: () async {
         await Future.delayed(Duration(seconds: 5));
       },
+      reverseIconScale:true,
       screenLoader: SizedBox(
         height: 100,
         width: 100,
@@ -41,6 +44,8 @@ class MyApp extends StatelessWidget {
         screenFunction: () async {
           await Future.delayed(Duration(seconds: 5));
         },
+        splashPageTransistion: SplashPageTransistion.SlideLeft,
+        pageTransistionDuration: Duration(seconds: 2),
         screenLoader: SizedBox(
           height: 100,
           width: 100,
