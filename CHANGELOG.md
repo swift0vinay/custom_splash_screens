@@ -1,5 +1,5 @@
 
-## [0.0.1] - First Release
-  
+## [0.0.2] - New Features Added!!
 
-ScaleSplashScreen and LinearSplashScreen are added.
+- Custom Page Transition's Added .
+- *reverseIconScale* property added in ScaleSplashScreen .

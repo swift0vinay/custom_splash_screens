@@ -3,17 +3,36 @@ import 'package:flutter/material.dart';
 import 'functions.dart';
 
 class LinearSplashScreen extends StatefulWidget {
+  // LinearSplashScreen
+
+  // [icon] represents the application icon .
   final Widget icon;
+  // [iconDuration] represents duration for which icon would animate .
   final Duration iconDuration;
+  // [label] represents text .
   final String label;
+  // [iconDirection] represents direction in which icon would animate .
   final SplashScreenDirection iconDirection;
+  // [labelDirection] represents direction in which label would animate .
   final SplashScreenDirection labelDirection;
+  // [labelDuration] represents duration for which label would animate .
   final Duration labelDuration;
+  // [labelStyle] represents textStyle given to label if provided .
   final TextStyle labelStyle;
+  // [screenFunction] represents function which would get excecuted after splash animation is completed .
   final Function screenFunction;
+  // [navigateTo] represents the page you want to navigate after splash animation is completed
+  // and screenFunction (if provided) is executed completely .
   final Widget navigateTo;
+  // [screenLoader] represents custom loader while screenFunction is executed
+  // @Default is CircularProgressIndicator .
   final Widget screenLoader;
+  // [backgroundColor] represents background Color of splash Screen .
   final Color backgroundColor;
+  // [splashPageTransistion] represents Page transistion while navigating to new Page .
+  final SplashPageTransistion splashPageTransistion;
+  // [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
+  final Duration pageTransistionDuration;
   LinearSplashScreen(
       {@required this.icon,
       @required this.labelDirection,
@@ -23,6 +42,8 @@ class LinearSplashScreen extends StatefulWidget {
       @required this.label,
       @required this.navigateTo,
       this.screenFunction,
+      this.splashPageTransistion,
+      this.pageTransistionDuration,
       this.labelStyle,
       this.screenLoader,
       this.backgroundColor})
@@ -32,7 +53,11 @@ class LinearSplashScreen extends StatefulWidget {
             labelDuration != null &&
             iconDuration != null &&
             iconDirection != null &&
-            label != null);
+            label != null &&
+            ((splashPageTransistion == null &&
+                    pageTransistionDuration == null) ||
+                (splashPageTransistion != null &&
+                    pageTransistionDuration != null)));
 
   @override
   _LinearSplashScreenState createState() => _LinearSplashScreenState();
@@ -70,10 +95,8 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
       if (labelAnimation.isCompleted) {
         if (this.widget.screenFunction == null) {
           Future.delayed(Duration(seconds: 1)).then((value) {
-            Navigator.of(context)
-                .pushReplacement(MaterialPageRoute(builder: (context) {
-              return this.widget.navigateTo;
-            }));
+            navigateToPage(context, widget.pageTransistionDuration,
+                widget.splashPageTransistion, widget.navigateTo);
           });
         } else {
           setState(() {
@@ -83,10 +106,8 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
           setState(() {
             loading = false;
           });
-          Navigator.of(context)
-              .pushReplacement(MaterialPageRoute(builder: (context) {
-            return this.widget.navigateTo;
-          }));
+          navigateToPage(context, widget.pageTransistionDuration,
+              widget.splashPageTransistion, widget.navigateTo);
         }
       }
       setState(() {});

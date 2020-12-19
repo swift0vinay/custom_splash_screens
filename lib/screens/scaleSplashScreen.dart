@@ -2,17 +2,36 @@ import 'package:flutter/material.dart';
 import 'functions.dart';
 
 class ScaleSplashScreen extends StatefulWidget {
-  // SCALE TRANSISTION
+  //ScaleSplashScreen
+
+  // [icon] represents the application icon .
   final Widget icon;
+  // [iconScaleDuration] represents duration for which icon would animate .
   final Duration iconScaleDuration;
+  // [reverseIconScale] represents if animation icon Scaling should be reversed .
+  final bool reverseIconScale;
+  // [label] represents text .
   final String label;
+  // [labelDirection] represents direction in which label would animate .
   final SplashScreenDirection labelDirection;
+  // [labelDuration] represents duration for which label would animate .
   final Duration labelDuration;
+  // [labelStyle] represents textStyle given to label if provided .
   final TextStyle labelStyle;
+  // [screenFunction] represents function which would get excecuted after splash animation is completed .
   final Function screenFunction;
+  // [navigateTo] represents the page you want to navigate after splash animation is completed
+  // and screenFunction (if provided) is executed completely .
   final Widget navigateTo;
+  // [screenLoader] represents custom loader while screenFunction is executed
+  // @Default is CircularProgressIndicator .
   final Widget screenLoader;
+  // [backgroundColor] represents background Color of splash Screen .
   final Color backgroundColor;
+  // [splashPageTransistion] represents Page transistion while navigating to new Page .
+  final SplashPageTransistion splashPageTransistion;
+  // [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
+  final Duration pageTransistionDuration;
   ScaleSplashScreen(
       {@required this.icon,
       @required this.labelDirection,
@@ -23,13 +42,20 @@ class ScaleSplashScreen extends StatefulWidget {
       this.screenFunction,
       this.labelStyle,
       this.screenLoader,
+      this.reverseIconScale,
+      this.splashPageTransistion,
+      this.pageTransistionDuration,
       this.backgroundColor})
       : assert(icon != null &&
             navigateTo != null &&
             labelDirection != null &&
             labelDuration != null &&
             iconScaleDuration != null &&
-            label != null);
+            label != null &&
+            ((splashPageTransistion == null &&
+                    pageTransistionDuration == null) ||
+                (splashPageTransistion != null &&
+                    pageTransistionDuration != null)));
   @override
   _ScaleSplashScreenState createState() => _ScaleSplashScreenState();
 }
@@ -45,7 +71,6 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
   bool loading = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     loading = false;
     initAnimation = false;
@@ -68,10 +93,8 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
       if (labelAnimation.isCompleted) {
         if (this.widget.screenFunction == null) {
           Future.delayed(Duration(seconds: 1)).then((value) {
-            Navigator.of(context)
-                .pushReplacement(MaterialPageRoute(builder: (context) {
-              return this.widget.navigateTo;
-            }));
+            navigateToPage(context, widget.pageTransistionDuration,
+                widget.splashPageTransistion, widget.navigateTo);
           });
         } else {
           setState(() {
@@ -81,10 +104,17 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
           setState(() {
             loading = false;
           });
-          Navigator.of(context)
-              .pushReplacement(MaterialPageRoute(builder: (context) {
-            return this.widget.navigateTo;
-          }));
+          if (widget.reverseIconScale != null && widget.reverseIconScale) {
+            await labelAnimationController.reverse().whenComplete(() async {
+              await scaleController.reverse().whenComplete(() {
+                navigateToPage(context, widget.pageTransistionDuration,
+                    widget.splashPageTransistion, widget.navigateTo);
+              });
+            });
+          } else {
+            navigateToPage(context, widget.pageTransistionDuration,
+                widget.splashPageTransistion, widget.navigateTo);
+          }
         }
       }
       setState(() {});
