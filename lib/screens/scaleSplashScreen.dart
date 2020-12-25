@@ -3,18 +3,23 @@ import 'functions.dart';
 
 class ScaleSplashScreen extends StatefulWidget {
   //ScaleSplashScreen
-
+  
+  // [onlyIcon] represents if only icon is to be show on splashScreen .
+  final bool onlyIcon;
   // [icon] represents the application icon .
   final Widget icon;
   // [iconScaleDuration] represents duration for which icon would animate .
   final Duration iconScaleDuration;
   // [reverseIconScale] represents if animation icon Scaling should be reversed .
+  // @Default is Duration(seconds:2) .
   final bool reverseIconScale;
   // [label] represents text .
   final String label;
   // [labelDirection] represents direction in which label would animate .
+  // @Default is SplashScreenDirection.LTR
   final SplashScreenDirection labelDirection;
   // [labelDuration] represents duration for which label would animate .
+  // @Default is Duration(seconds:2) .
   final Duration labelDuration;
   // [labelStyle] represents textStyle given to label if provided .
   final TextStyle labelStyle;
@@ -32,26 +37,23 @@ class ScaleSplashScreen extends StatefulWidget {
   final SplashPageTransistion splashPageTransistion;
   // [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
   final Duration pageTransistionDuration;
-  ScaleSplashScreen(
-      {@required this.icon,
-      @required this.labelDirection,
-      @required this.iconScaleDuration,
-      @required this.labelDuration,
-      @required this.label,
-      @required this.navigateTo,
-      this.screenFunction,
-      this.labelStyle,
-      this.screenLoader,
-      this.reverseIconScale,
-      this.splashPageTransistion,
-      this.pageTransistionDuration,
-      this.backgroundColor})
-      : assert(icon != null &&
+  ScaleSplashScreen({
+    @required this.icon,
+    this.labelDirection: SplashScreenDirection.LTR,
+    this.iconScaleDuration: const Duration(seconds: 2),
+    this.labelDuration: const Duration(seconds: 2),
+    this.label: '',
+    @required this.navigateTo,
+    this.onlyIcon: false,
+    this.screenFunction,
+    this.labelStyle,
+    this.screenLoader,
+    this.reverseIconScale: false,
+    this.splashPageTransistion,
+    this.pageTransistionDuration,
+    this.backgroundColor,
+  }) : assert(icon != null &&
             navigateTo != null &&
-            labelDirection != null &&
-            labelDuration != null &&
-            iconScaleDuration != null &&
-            label != null &&
             ((splashPageTransistion == null &&
                     pageTransistionDuration == null) ||
                 (splashPageTransistion != null &&
@@ -62,8 +64,11 @@ class ScaleSplashScreen extends StatefulWidget {
 
 class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     with TickerProviderStateMixin {
+  // [scaleController] animates icon through scaleAnimation .
+  // scales Icon according for duration given by [iconScaleDuration]
   AnimationController scaleController;
   Animation<double> scaleAnimation;
+  // [labelAnimationController] animates label in the direction specified by [labelDirection] .
   AnimationController labelAnimationController;
   Animation<double> labelAnimation;
   bool completed = false;
@@ -82,10 +87,36 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
         AnimationController(vsync: this, duration: widget.labelDuration);
     labelAnimation =
         Tween<double>(begin: 0, end: 0).animate(labelAnimationController);
-    scaleAnimation.addListener(() {
+    scaleAnimation.addListener(() async {
       if (scaleAnimation.isCompleted) {
-        completed = true;
-        labelAnimationController.forward();
+        if (widget.onlyIcon) {
+          if (this.widget.screenFunction == null) {
+            Future.delayed(Duration(seconds: 1)).then((value) {
+              navigateToPage(context, widget.pageTransistionDuration,
+                  widget.splashPageTransistion, widget.navigateTo);
+            });
+          } else {
+            setState(() {
+              loading = true;
+            });
+            await this.widget.screenFunction();
+            setState(() {
+              loading = false;
+            });
+            if (widget.reverseIconScale != null && widget.reverseIconScale) {
+              await scaleController.reverse().whenComplete(() {
+                navigateToPage(context, widget.pageTransistionDuration,
+                    widget.splashPageTransistion, widget.navigateTo);
+              });
+            } else {
+              navigateToPage(context, widget.pageTransistionDuration,
+                  widget.splashPageTransistion, widget.navigateTo);
+            }
+          }
+        } else {
+          completed = true;
+          labelAnimationController.forward();
+        }
       }
       setState(() {});
     });
@@ -250,7 +281,9 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     double height = getHeight(context);
     if (!initAnimation) {
       initAnimation = true;
-      labelAnimation = getAnimation(width, height);
+      if (!widget.onlyIcon) {
+        labelAnimation = getAnimation(width, height);
+      }
       scaleController.forward();
     }
 
@@ -289,7 +322,7 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
                       : CrossFadeState.showSecond,
                 ),
               ),
-              getWidget1(width, height),
+              !widget.onlyIcon ? getWidget1(width, height) : SizedBox.shrink(),
               getWidget2(width, height),
             ],
           ),

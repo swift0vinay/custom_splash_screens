@@ -35,11 +35,7 @@ class MyApp extends StatelessWidget {
 
       home: LinearSplashScreen(
         icon: FlutterLogo(),
-        iconDirection: SplashScreenDirection.TTB,
-        iconDuration: Duration(seconds: 2),
-        label: "APP NAME",
-        labelDirection: SplashScreenDirection.LTR,
-        labelDuration: Duration(seconds: 2),
+        onlyIcon: true,
         navigateTo: NavigateTo(),
         screenFunction: () async {
           await Future.delayed(Duration(seconds: 5));

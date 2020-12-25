@@ -20,6 +20,7 @@ Also there are 4 Splash Screen Directions to customize animations on your own :
  -   SplashScrenDirection.BTT (Bottom-To-Top)
 
 *New Feature :*
+
 1) Custom Page Transition's are added :
 
  - SlideDown
@@ -30,18 +31,15 @@ Also there are 4 Splash Screen Directions to customize animations on your own :
  - Flip2
  - Flip3
  - Flip4
+
 2) *reverseIconScale* property added in ScaleSplashScreen .
+
+3) *onlyIcon* property added : if only icon is required to be shown.
 
 Further below are the must required properties while using any of the splash screen :
 
 -   icon
--   label
--   iconDuration (in Linear-Splash-Screen only)
--   iconScaleDuration (in Scale-Splash-Screen only)
--   labelDuration
 -   navigateTo
--   labelDirection
--   iconDirection (in Linear-Splash-Screen only)
 
 # ScaleSplashScreen
 
@@ -64,7 +62,7 @@ import 'package:custom_splash_screens/custom_splash_screens.dart';
     labelDirection: SplashScreenDirection.LTR,  //direction in which label would move in splashScreen
     
     iconScaleDuration: Duration(seconds: 2),  // Duration for how long icon would scale
-    reverseIconScale:true,//Reverses Icon Scale Animation after splash animation is completed
+    reverseIconScale:true,  //Reverses Icon Scale Animation after splash animation is completed
     
     labelDuration: Duration(seconds: 2),  // Duration for how long label would move
     
@@ -74,7 +72,7 @@ import 'package:custom_splash_screens/custom_splash_screens.dart';
     
     labelStyle: TextStyle(fontSize: 18,fontWeight:FontWeight.bold),  //style for your label
     
-    navigateTo: NewHome(),  // Navigate to another Page whent animation is completed or screenFunction (if given) is executed
+    navigateTo: NewHome(),  // Navigate to another Page when animation is completed or screenFunction (if given) is executed
     
     screenFunction: () async {
 	    await  Future.delayed(Duration(seconds: 10));
@@ -125,7 +123,7 @@ import 'package:custom_splash_screens/custom_splash_screens.dart';
     
     labelStyle: TextStyle(fontSize: 18,fontWeight:FontWeight.bold),  //style for your label
     
-    navigateTo: NewHome(),  // Navigate to another Page whent animation is completed or screenFunction (if given) is executed
+    navigateTo: NewHome(),  // Navigate to another Page when animation is completed or screenFunction (if given) is executed
     
     screenFunction: () async {
 	    await  Future.delayed(Duration(seconds: 10));

@@ -1,15 +1,24 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 
 getHeight(BuildContext context) {
   // Method to get screen Height
-  return MediaQuery.of(context).size.height;
+  Orientation orientation = MediaQuery.of(context).orientation;
+  if (orientation == Orientation.portrait)
+    return MediaQuery.of(context).size.height;
+  else
+    return MediaQuery.of(context).size.width;
 }
 
 getWidth(BuildContext context) {
   // Method to get screen Width
-  return MediaQuery.of(context).size.width;
+  Orientation orientation = MediaQuery.of(context).orientation;
+  if (orientation == Orientation.portrait)
+    return MediaQuery.of(context).size.width;
+  else
+    return MediaQuery.of(context).size.height;
 }
 
 //Enum Representing Directions

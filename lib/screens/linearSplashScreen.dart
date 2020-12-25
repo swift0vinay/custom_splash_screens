@@ -5,55 +5,71 @@ import 'functions.dart';
 class LinearSplashScreen extends StatefulWidget {
   // LinearSplashScreen
 
+  // [onlyIcon] represents if only icon is to be show on splashScreen .
+  final bool onlyIcon;
+
   // [icon] represents the application icon .
   final Widget icon;
   // [iconDuration] represents duration for which icon would animate .
+  // @Default is Duration(seconds:2) .
+
   final Duration iconDuration;
   // [label] represents text .
+
   final String label;
+
   // [iconDirection] represents direction in which icon would animate .
+  // @Default is SplashScreenDirection.TTB
   final SplashScreenDirection iconDirection;
+
   // [labelDirection] represents direction in which label would animate .
+  // @Default is SplashScreenDirection.LTR
   final SplashScreenDirection labelDirection;
+
   // [labelDuration] represents duration for which label would animate .
+  // @Default is Duration(seconds:2) .
   final Duration labelDuration;
+
   // [labelStyle] represents textStyle given to label if provided .
   final TextStyle labelStyle;
+
   // [screenFunction] represents function which would get excecuted after splash animation is completed .
   final Function screenFunction;
+
   // [navigateTo] represents the page you want to navigate after splash animation is completed
   // and screenFunction (if provided) is executed completely .
   final Widget navigateTo;
+
   // [screenLoader] represents custom loader while screenFunction is executed
   // @Default is CircularProgressIndicator .
   final Widget screenLoader;
+
   // [backgroundColor] represents background Color of splash Screen .
   final Color backgroundColor;
+
   // [splashPageTransistion] represents Page transistion while navigating to new Page .
   final SplashPageTransistion splashPageTransistion;
+
   // [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
   final Duration pageTransistionDuration;
-  LinearSplashScreen(
-      {@required this.icon,
-      @required this.labelDirection,
-      @required this.iconDirection,
-      @required this.iconDuration,
-      @required this.labelDuration,
-      @required this.label,
-      @required this.navigateTo,
-      this.screenFunction,
-      this.splashPageTransistion,
-      this.pageTransistionDuration,
-      this.labelStyle,
-      this.screenLoader,
-      this.backgroundColor})
-      : assert(icon != null &&
+
+  LinearSplashScreen({
+    @required this.icon,
+    this.onlyIcon: false,
+    this.labelDirection: SplashScreenDirection.LTR,
+    this.iconDirection: SplashScreenDirection.TTB,
+    this.iconDuration: const Duration(seconds: 2),
+    this.labelDuration: const Duration(seconds: 2),
+    this.label: '',
+    @required this.navigateTo,
+    this.screenFunction,
+    this.splashPageTransistion,
+    this.pageTransistionDuration,
+    this.labelStyle,
+    this.screenLoader,
+    this.backgroundColor,
+  }) : assert(icon != null &&
             navigateTo != null &&
-            labelDirection != null &&
-            labelDuration != null &&
-            iconDuration != null &&
-            iconDirection != null &&
-            label != null &&
             ((splashPageTransistion == null &&
                     pageTransistionDuration == null) ||
                 (splashPageTransistion != null &&
@@ -65,8 +81,10 @@ class LinearSplashScreen extends StatefulWidget {
 
 class _LinearSplashScreenState extends State<LinearSplashScreen>
     with TickerProviderStateMixin {
+  // [iconController] animates label in the direction specified by [iconDirection] .
   AnimationController iconController;
   Animation iconAnimation;
+  // [labelController] animates label in the direction specified by [labelDirection] .
   AnimationController labelController;
   Animation labelAnimation;
   bool completed = false;
@@ -84,10 +102,29 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
         AnimationController(vsync: this, duration: widget.labelDuration);
     iconAnimation = Tween<double>(begin: 0, end: 0).animate(iconController);
     labelAnimation = Tween<double>(begin: 0, end: 0).animate(labelController);
-    iconAnimation.addListener(() {
+    iconAnimation.addListener(() async {
       if (iconAnimation.isCompleted) {
-        completed = true;
-        labelController.forward();
+        if (widget.onlyIcon) {
+          if (this.widget.screenFunction == null) {
+            Future.delayed(Duration(seconds: 1)).then((value) {
+              navigateToPage(context, widget.pageTransistionDuration,
+                  widget.splashPageTransistion, widget.navigateTo);
+            });
+          } else {
+            setState(() {
+              loading = true;
+            });
+            await this.widget.screenFunction();
+            setState(() {
+              loading = false;
+            });
+            navigateToPage(context, widget.pageTransistionDuration,
+                widget.splashPageTransistion, widget.navigateTo);
+          }
+        } else {
+          completed = true;
+          labelController.forward();
+        }
       }
       setState(() {});
     });
@@ -498,6 +535,7 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
                       : CrossFadeState.showSecond,
                 ),
               ),
+              !widget.onlyIcon ? getWidget1(width, height) : SizedBox.shrink(),
               getWidget1(width, height),
               getWidget2(width, height),
             ],
