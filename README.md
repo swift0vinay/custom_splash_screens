@@ -62,6 +62,7 @@ import 'package:custom_splash_screens/custom_splash_screens.dart';
     labelDirection: SplashScreenDirection.LTR,  //direction in which label would move in splashScreen
     
     iconScaleDuration: Duration(seconds: 2),  // Duration for how long icon would scale
+    
     reverseIconScale:true,  //Reverses Icon Scale Animation after splash animation is completed
     
     labelDuration: Duration(seconds: 2),  // Duration for how long label would move
