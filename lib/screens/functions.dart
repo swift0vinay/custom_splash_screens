@@ -1,35 +1,38 @@
-import 'dart:io';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
-getHeight(BuildContext context) {
-  // Method to get screen Height
-  Orientation orientation = MediaQuery.of(context).orientation;
-  if (orientation == Orientation.portrait)
-    return MediaQuery.of(context).size.height;
-  else
-    return MediaQuery.of(context).size.width;
+Orientation getOrientation(BuildContext context) {
+  /// Method to get orientation of device
+  return MediaQuery.of(context).orientation;
 }
 
-getWidth(BuildContext context) {
-  // Method to get screen Width
-  Orientation orientation = MediaQuery.of(context).orientation;
-  if (orientation == Orientation.portrait)
-    return MediaQuery.of(context).size.width;
-  else
-    return MediaQuery.of(context).size.height;
+double getHeight(BuildContext context) {
+  /// Method to get screen Height
+  return MediaQuery.of(context).size.height;
 }
 
-//Enum Representing Directions
+double getWidth(BuildContext context) {
+  /// Method to get screen Width
+  return MediaQuery.of(context).size.width;
+}
+
+///Enum Representing Directions
 enum SplashScreenDirection {
-  LTR, // LEFT-TO-RIGHT
-  RTL, // RIGHT-TO-LEFT
-  TTB, // TOP-TO-BOTTOM
-  BTT, // BOTTOM-TO-TOP
+  LTR,
+
+  /// LEFT-TO-RIGHT
+  RTL,
+
+  /// RIGHT-TO-LEFT
+  TTB,
+
+  /// TOP-TO-BOTTOM
+  BTT,
+
+  /// BOTTOM-TO-TOP
 }
 
-//Enum Representing SplashPageTransistions
+///Enum Representing SplashPageTransistions
 enum SplashPageTransistion {
   SlideDown,
   SlideUp,
@@ -118,7 +121,7 @@ getPageTransistion(context, animation, secondaryAnimation, child,
   }
 }
 
-navigateToPage(BuildContext context, Duration pageTransistionDuration,
+void navigateToPage(BuildContext context, Duration pageTransistionDuration,
     SplashPageTransistion splashPageTransistion, Widget navigateTo) {
   if (splashPageTransistion != null) {
     Navigator.of(context).pushReplacement(PageRouteBuilder(

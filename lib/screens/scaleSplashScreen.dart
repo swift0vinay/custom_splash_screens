@@ -1,41 +1,60 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'functions.dart';
 
 class ScaleSplashScreen extends StatefulWidget {
-  //ScaleSplashScreen
-  
-  // [onlyIcon] represents if only icon is to be show on splashScreen .
+  /// ScaleSplashScreen
+
+  /// [onlyIcon] represents if only icon is to be show on splashScreen .
   final bool onlyIcon;
-  // [icon] represents the application icon .
+
+  /// [icon] represents the application icon .
   final Widget icon;
-  // [iconScaleDuration] represents duration for which icon would animate .
+
+  /// [iconScaleDuration] represents duration for which icon would animate .
   final Duration iconScaleDuration;
-  // [reverseIconScale] represents if animation icon Scaling should be reversed .
-  // @Default is Duration(seconds:2) .
+
+  /// [reverseIconScale] represents if animation icon Scaling should be reversed .
+  ///
+  /// @Default is Duration(seconds:2) .
   final bool reverseIconScale;
-  // [label] represents text .
+
+  /// [label] represents text .
   final String label;
-  // [labelDirection] represents direction in which label would animate .
-  // @Default is SplashScreenDirection.LTR
+
+  /// [labelDirection] represents direction in which label would animate .
+  ///
+  /// @Default is SplashScreenDirection.LTR
   final SplashScreenDirection labelDirection;
-  // [labelDuration] represents duration for which label would animate .
-  // @Default is Duration(seconds:2) .
+
+  /// [labelDuration] represents duration for which label would animate .
+  /// @Default is Duration(seconds:2) .
   final Duration labelDuration;
-  // [labelStyle] represents textStyle given to label if provided .
+
+  /// [labelStyle] represents textStyle given to label if provided .
   final TextStyle labelStyle;
-  // [screenFunction] represents function which would get excecuted after splash animation is completed .
+
+  /// [screenFunction] represents function which would get excecuted after splash animation is completed .
   final Function screenFunction;
-  // [navigateTo] represents the page you want to navigate after splash animation is completed
-  // and screenFunction (if provided) is executed completely .
+
+  /// [navigateTo] represents the page you want to navigate after splash animation is completed
+  ///
+  /// and screenFunction (if provided) is executed completely .
   final Widget navigateTo;
-  // [screenLoader] represents custom loader while screenFunction is executed
-  // @Default is CircularProgressIndicator .
+
+  /// [screenLoader] represents custom loader while screenFunction is executed
+  ///
+  /// @Default is CircularProgressIndicator .
   final Widget screenLoader;
-  // [backgroundColor] represents background Color of splash Screen .
+
+  /// [backgroundColor] represents background Color of splash Screen .
   final Color backgroundColor;
-  // [splashPageTransistion] represents Page transistion while navigating to new Page .
+
+  /// [splashPageTransistion] represents Page transistion while navigating to new Page .
   final SplashPageTransistion splashPageTransistion;
-  // [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
+
+  /// [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
   final Duration pageTransistionDuration;
   ScaleSplashScreen({
     @required this.icon,
@@ -64,22 +83,66 @@ class ScaleSplashScreen extends StatefulWidget {
 
 class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     with TickerProviderStateMixin {
-  // [scaleController] animates icon through scaleAnimation .
-  // scales Icon according for duration given by [iconScaleDuration]
+  /// [scaleController] animates icon through scaleAnimation .
+  ///
+  /// scales Icon according for duration given by [iconScaleDuration]
   AnimationController scaleController;
   Animation<double> scaleAnimation;
-  // [labelAnimationController] animates label in the direction specified by [labelDirection] .
+
+  /// [iconKey] derives the position of icon properties such as height and width .
+  final iconKey = GlobalKey();
+
+  /// [labelAnimationController] animates label in the direction specified by [labelDirection] .
   AnimationController labelAnimationController;
   Animation<double> labelAnimation;
+
+  /// [completed]  keeps track of whether animation is completed or not .
   bool completed = false;
+
+  /// [initAnimation]  helps to initialize the animations only once .
   bool initAnimation = false;
+
+  /// [loading] keeps track of loading while [screenFunction] is executed .
   bool loading = false;
+
+  double endBottomPercent = 0;
+  double endRightPercent = 0;
+  double pRightPercent = 0.0;
+  double pBottomPercent = 0.0;
+  double iconWidth = 0.0;
+  double iconHeight = 0.0;
+
   @override
   void initState() {
     super.initState();
+
+    /// used to locate the [icon] widget so as to center icon and label
+    ///
+    /// Below method calculates the center of screen accurately and optimizes animation accordingly.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      RenderBox box = iconKey.currentContext.findRenderObject();
+      double screenWidth = getWidth(context);
+      double screenHeight = getHeight(context);
+      iconWidth = box.size.width;
+      iconHeight = box.size.height;
+      endRightPercent = ((screenWidth - iconWidth) / screenWidth * 100);
+      endBottomPercent = ((screenHeight - iconHeight) / screenHeight * 100);
+      pRightPercent = ((screenWidth - max(screenHeight, screenWidth) * 0.1) /
+          screenWidth *
+          100);
+      pBottomPercent = ((screenHeight - max(screenHeight, screenWidth) * 0.1) /
+          screenHeight *
+          100);
+      if (!widget.onlyIcon) {
+        labelAnimation = getAnimation(screenWidth, screenHeight);
+      }
+      setState(() {});
+    });
+
     loading = false;
     initAnimation = false;
     completed = false;
+
     scaleController =
         AnimationController(vsync: this, duration: widget.iconScaleDuration);
     scaleAnimation = Tween<double>(begin: 5, end: 1).animate(scaleController);
@@ -87,6 +150,8 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
         AnimationController(vsync: this, duration: widget.labelDuration);
     labelAnimation =
         Tween<double>(begin: 0, end: 0).animate(labelAnimationController);
+
+    /// listener added for [scaleAnimation]
     scaleAnimation.addListener(() async {
       if (scaleAnimation.isCompleted) {
         if (widget.onlyIcon) {
@@ -120,6 +185,8 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
       }
       setState(() {});
     });
+
+    /// listener added for [labelAnimation]
     labelAnimation.addListener(() async {
       if (labelAnimation.isCompleted) {
         if (this.widget.screenFunction == null) {
@@ -160,119 +227,126 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
   }
 
   getAnimation(double w, double h) {
+    double halfIconWidth = iconWidth * 0.5;
+    double val1 = halfIconWidth * 1.5;
+    double halfIconHeight = iconHeight * 0.5;
+    double val2 = halfIconHeight * 1.5;
     if (widget.labelDirection == SplashScreenDirection.LTR) {
-      return Tween<double>(begin: w * 0.35, end: w * 0.20)
+      return Tween<double>(begin: 0, end: val1)
           .animate(labelAnimationController);
     } else if (widget.labelDirection == SplashScreenDirection.RTL) {
-      return Tween<double>(begin: w * 0.35, end: w * 0.20)
+      return Tween<double>(begin: 0, end: val1)
           .animate(labelAnimationController);
     } else if (widget.labelDirection == SplashScreenDirection.TTB) {
-      return Tween<double>(begin: h * 0.45, end: h * 0.55)
+      return Tween<double>(begin: 0, end: val2)
           .animate(labelAnimationController);
     } else if (widget.labelDirection == SplashScreenDirection.BTT) {
-      return Tween<double>(begin: h * 0.45, end: h * 0.25)
+      return Tween<double>(begin: 0, end: val2)
           .animate(labelAnimationController);
     }
   }
 
   getWidget1(double w, double h) {
+    double screenHorizontalCenter = w * endRightPercent * 0.01 * 0.5;
+    double screenVerticalCenter = h * endBottomPercent * 0.01 * 0.5;
     if (widget.labelDirection == SplashScreenDirection.LTR) {
       return Positioned(
-        left: !completed ? w * 0.35 : w * 0.70 - labelAnimation.value,
-        top: h * 0.40,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: w * 0.3,
-            width: w * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: !completed
+            ? screenHorizontalCenter
+            : screenHorizontalCenter + labelAnimation.value,
+        top: screenVerticalCenter,
+        child: labelWidget(h, w),
       );
     } else if (widget.labelDirection == SplashScreenDirection.RTL) {
       return Positioned(
-        left: !completed ? w * 0.35 : labelAnimation.value,
-        top: h * 0.40,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: w * 0.3,
-            width: w * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: !completed
+            ? screenHorizontalCenter
+            : screenHorizontalCenter - labelAnimation.value,
+        top: screenVerticalCenter,
+        child: labelWidget(h, w),
       );
-    } else if (widget.labelDirection == SplashScreenDirection.TTB ||
-        widget.labelDirection == SplashScreenDirection.BTT) {
+    } else if (widget.labelDirection == SplashScreenDirection.TTB) {
       return Positioned(
-        left: w * 0.35,
-        top: labelAnimation.value,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: w * 0.3,
-            width: w * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: screenHorizontalCenter,
+        top: screenVerticalCenter - labelAnimation.value,
+        child: labelWidget(h, w),
+      );
+    } else if (widget.labelDirection == SplashScreenDirection.BTT) {
+      return Positioned(
+        left: screenHorizontalCenter,
+        top: screenVerticalCenter + labelAnimation.value,
+        child: labelWidget(h, w),
       );
     }
   }
 
+  /// Returns the widget which contains [label]
+  AnimatedOpacity labelWidget(double h, double w) {
+    return AnimatedOpacity(
+      duration: Duration(milliseconds: 800),
+      opacity: completed ? 1 : 0,
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: max(h, w) * 0.1,
+          minWidth: max(h, w) * 0.1,
+        ),
+        height: iconHeight,
+        width: iconWidth,
+        child: Center(
+          child: Text(this.widget.label, style: this.widget.labelStyle),
+        ),
+      ),
+    );
+  }
+
   getWidget2(double w, double h) {
+    double screenHorizontalCenter = w * endRightPercent * 0.01 * 0.5;
+    double screenVerticalCenter = h * endBottomPercent * 0.01 * 0.5;
     if (widget.labelDirection == SplashScreenDirection.LTR) {
       return Positioned(
-        left: !completed ? w * 0.35 : labelAnimation.value,
-        top: h * 0.40,
-        child: Transform.scale(
-          scale: scaleAnimation.value,
-          child: Container(
-            height: w * 0.3,
-            width: w * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
-        ),
+        left: !completed
+            ? screenHorizontalCenter
+            : screenHorizontalCenter - labelAnimation.value,
+        top: screenVerticalCenter,
+        child: iconWidget(h, w),
       );
     } else if (widget.labelDirection == SplashScreenDirection.RTL) {
       return Positioned(
-        left: !completed ? w * 0.35 : w * 0.70 - labelAnimation.value,
-        top: h * 0.40,
-        child: Transform.scale(
-          scale: scaleAnimation.value,
-          child: Container(
-            height: w * 0.3,
-            width: w * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
-        ),
+        left: !completed
+            ? screenHorizontalCenter
+            : screenHorizontalCenter + labelAnimation.value,
+        top: screenVerticalCenter,
+        child: iconWidget(h, w),
       );
-    } else if (widget.labelDirection == SplashScreenDirection.TTB ||
-        widget.labelDirection == SplashScreenDirection.BTT) {
+    } else if (widget.labelDirection == SplashScreenDirection.TTB) {
       return Positioned(
-        left: w * 0.35,
-        top: h * 0.40,
-        child: Transform.scale(
-          scale: scaleAnimation.value,
-          child: Container(
-            height: w * 0.3,
-            width: w * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
-        ),
+        left: screenHorizontalCenter,
+        top: screenVerticalCenter + labelAnimation.value,
+        child: iconWidget(h, w),
+      );
+    } else if (widget.labelDirection == SplashScreenDirection.BTT) {
+      return Positioned(
+        left: screenHorizontalCenter,
+        top: screenVerticalCenter - labelAnimation.value,
+        child: iconWidget(h, w),
       );
     }
+  }
+
+  /// Returns the widget which contains [icon]
+  Transform iconWidget(double h, double w) {
+    return Transform.scale(
+      scale: scaleAnimation.value,
+      child: Container(
+        key: iconKey,
+        constraints: BoxConstraints(
+          minHeight: max(h, w) * 0.1,
+          minWidth: max(h, w) * 0.1,
+        ),
+        color: widget.backgroundColor ?? Colors.white,
+        child: this.widget.icon,
+      ),
+    );
   }
 
   @override
@@ -281,9 +355,6 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     double height = getHeight(context);
     if (!initAnimation) {
       initAnimation = true;
-      if (!widget.onlyIcon) {
-        labelAnimation = getAnimation(width, height);
-      }
       scaleController.forward();
     }
 
@@ -300,22 +371,22 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
                 width: width,
               ),
               Positioned(
-                bottom: height * 0.15,
-                left: width * 0.40,
+                bottom: height * pBottomPercent * 0.01 * 0.01,
+                left: width * pRightPercent * 0.5 * 0.01,
                 child: AnimatedCrossFade(
                   duration: Duration(milliseconds: 800),
                   firstChild: this.widget.screenLoader == null
                       ? SizedBox(
-                          height: height * 0.1,
-                          width: height * 0.1,
+                          height: max(width, height) * 0.1,
+                          width: max(width, height) * 0.1,
                           child: Center(
                             child: CircularProgressIndicator(),
                           ),
                         )
                       : this.widget.screenLoader,
                   secondChild: SizedBox(
-                    height: height * 0.1,
-                    width: height * 0.1,
+                    height: max(width, height) * 0.1,
+                    width: max(width, height) * 0.1,
                   ),
                   crossFadeState: loading
                       ? CrossFadeState.showFirst

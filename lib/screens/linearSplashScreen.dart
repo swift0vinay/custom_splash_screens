@@ -3,54 +3,56 @@ import 'package:flutter/material.dart';
 import 'functions.dart';
 
 class LinearSplashScreen extends StatefulWidget {
-  // LinearSplashScreen
+  /// LinearSplashScreen
 
-  // [onlyIcon] represents if only icon is to be show on splashScreen .
+  /// [onlyIcon] represents if only icon is to be show on splashScreen .
   final bool onlyIcon;
 
-  // [icon] represents the application icon .
+  /// [icon] represents the application icon .
   final Widget icon;
-  // [iconDuration] represents duration for which icon would animate .
-  // @Default is Duration(seconds:2) .
+
+  /// [iconDuration] represents duration for which icon would animate .
+  /// @Default is Duration(seconds:2) .
 
   final Duration iconDuration;
-  // [label] represents text .
+
+  /// [label] represents text .
 
   final String label;
 
-  // [iconDirection] represents direction in which icon would animate .
-  // @Default is SplashScreenDirection.TTB
+  /// [iconDirection] represents direction in which icon would animate .
+  /// @Default is SplashScreenDirection.TTB
   final SplashScreenDirection iconDirection;
 
-  // [labelDirection] represents direction in which label would animate .
-  // @Default is SplashScreenDirection.LTR
+  /// [labelDirection] represents direction in which label would animate .
+  /// @Default is SplashScreenDirection.LTR
   final SplashScreenDirection labelDirection;
 
-  // [labelDuration] represents duration for which label would animate .
-  // @Default is Duration(seconds:2) .
+  /// [labelDuration] represents duration for which label would animate .
+  /// @Default is Duration(seconds:2) .
   final Duration labelDuration;
 
-  // [labelStyle] represents textStyle given to label if provided .
+  /// [labelStyle] represents textStyle given to label if provided .
   final TextStyle labelStyle;
 
-  // [screenFunction] represents function which would get excecuted after splash animation is completed .
+  /// [screenFunction] represents function which would get excecuted after splash animation is completed .
   final Function screenFunction;
 
-  // [navigateTo] represents the page you want to navigate after splash animation is completed
-  // and screenFunction (if provided) is executed completely .
+  /// [navigateTo] represents the page you want to navigate after splash animation is completed
+  /// and screenFunction (if provided) is executed completely .
   final Widget navigateTo;
 
-  // [screenLoader] represents custom loader while screenFunction is executed
-  // @Default is CircularProgressIndicator .
+  /// [screenLoader] represents custom loader while screenFunction is executed
+  /// @Default is CircularProgressIndicator .
   final Widget screenLoader;
 
-  // [backgroundColor] represents background Color of splash Screen .
+  /// [backgroundColor] represents background Color of splash Screen .
   final Color backgroundColor;
 
-  // [splashPageTransistion] represents Page transistion while navigating to new Page .
+  /// [splashPageTransistion] represents Page transistion while navigating to new Page .
   final SplashPageTransistion splashPageTransistion;
 
-  // [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
+  /// [pageTransistionDuration] represents Page transistion Duration while navigating to new Page .
   final Duration pageTransistionDuration;
 
   LinearSplashScreen({
@@ -81,10 +83,11 @@ class LinearSplashScreen extends StatefulWidget {
 
 class _LinearSplashScreenState extends State<LinearSplashScreen>
     with TickerProviderStateMixin {
-  // [iconController] animates label in the direction specified by [iconDirection] .
+  /// [iconController] animates label in the direction specified by [iconDirection] .
   AnimationController iconController;
   Animation iconAnimation;
-  // [labelController] animates label in the direction specified by [labelDirection] .
+
+  /// [labelController] animates label in the direction specified by [labelDirection] .
   AnimationController labelController;
   Animation labelAnimation;
   bool completed = false;
