@@ -146,6 +146,7 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     scaleController =
         AnimationController(vsync: this, duration: widget.iconScaleDuration);
     scaleAnimation = Tween<double>(begin: 5, end: 1).animate(scaleController);
+
     labelAnimationController =
         AnimationController(vsync: this, duration: widget.labelDuration);
     labelAnimation =
@@ -268,13 +269,13 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     } else if (widget.labelDirection == SplashScreenDirection.TTB) {
       return Positioned(
         left: screenHorizontalCenter,
-        top: screenVerticalCenter - labelAnimation.value,
+        top: screenVerticalCenter + labelAnimation.value,
         child: labelWidget(h, w),
       );
     } else if (widget.labelDirection == SplashScreenDirection.BTT) {
       return Positioned(
         left: screenHorizontalCenter,
-        top: screenVerticalCenter + labelAnimation.value,
+        top: screenVerticalCenter - labelAnimation.value,
         child: labelWidget(h, w),
       );
     }
@@ -321,13 +322,13 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
     } else if (widget.labelDirection == SplashScreenDirection.TTB) {
       return Positioned(
         left: screenHorizontalCenter,
-        top: screenVerticalCenter + labelAnimation.value,
+        top: screenVerticalCenter - labelAnimation.value,
         child: iconWidget(h, w),
       );
     } else if (widget.labelDirection == SplashScreenDirection.BTT) {
       return Positioned(
         left: screenHorizontalCenter,
-        top: screenVerticalCenter - labelAnimation.value,
+        top: screenVerticalCenter + labelAnimation.value,
         child: iconWidget(h, w),
       );
     }
@@ -353,6 +354,7 @@ class _ScaleSplashScreenState extends State<ScaleSplashScreen>
   Widget build(BuildContext context) {
     double width = getWidth(context);
     double height = getHeight(context);
+
     if (!initAnimation) {
       initAnimation = true;
       scaleController.forward();

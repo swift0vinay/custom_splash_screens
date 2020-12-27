@@ -1,6 +1,6 @@
 name: custom_splash_screens
 description: The easiest way to create custom splash screens in a just few line of codes.
-version: 0.0.3
+version: 0.1.0
 homepage: https://github.com/swift0vinay/custom_splash_screens
 
 environment:

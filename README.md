@@ -5,7 +5,7 @@ Creates Custom Splash Screens having cool Animations.
 
 # Getting Started
 
-To use this plugin, add  _custom_splash_screen_  as a dependency in your pubspec.yaml file.
+To use this plugin, add  _custom_splash_screens_  as a dependency in your pubspec.yaml file.
 
 There are 2 types of SplashScreens :
 
@@ -19,7 +19,7 @@ Also there are 4 Splash Screen Directions to customize animations on your own :
  -   SplashScrenDirection.TTB (Top-To-Bottom)
  -   SplashScrenDirection.BTT (Bottom-To-Top)
 
-*New Feature :*
+*New Features :*
 
 1) Custom Page Transition's are added :
 

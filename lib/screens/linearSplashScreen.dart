@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import 'functions.dart';
@@ -12,6 +14,7 @@ class LinearSplashScreen extends StatefulWidget {
   final Widget icon;
 
   /// [iconDuration] represents duration for which icon would animate .
+  ///
   /// @Default is Duration(seconds:2) .
 
   final Duration iconDuration;
@@ -21,14 +24,17 @@ class LinearSplashScreen extends StatefulWidget {
   final String label;
 
   /// [iconDirection] represents direction in which icon would animate .
+  ///
   /// @Default is SplashScreenDirection.TTB
   final SplashScreenDirection iconDirection;
 
   /// [labelDirection] represents direction in which label would animate .
+  ///
   /// @Default is SplashScreenDirection.LTR
   final SplashScreenDirection labelDirection;
 
   /// [labelDuration] represents duration for which label would animate .
+  ///
   /// @Default is Duration(seconds:2) .
   final Duration labelDuration;
 
@@ -39,10 +45,12 @@ class LinearSplashScreen extends StatefulWidget {
   final Function screenFunction;
 
   /// [navigateTo] represents the page you want to navigate after splash animation is completed
+  ///
   /// and screenFunction (if provided) is executed completely .
   final Widget navigateTo;
 
   /// [screenLoader] represents custom loader while screenFunction is executed
+  ///
   /// @Default is CircularProgressIndicator .
   final Widget screenLoader;
 
@@ -90,21 +98,67 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
   /// [labelController] animates label in the direction specified by [labelDirection] .
   AnimationController labelController;
   Animation labelAnimation;
+
+  /// [iconKey] derives the position of icon properties such as height and width .
+  final iconKey = GlobalKey();
+
+  /// [completed]  keeps track of whether animation is completed or not .
   bool completed = false;
+
+  /// [initAnimation]  helps to initialize the animations only once .
   bool initAnimation = false;
+
+  /// [loading] keeps track of loading while [screenFunction] is executed .
   bool loading = false;
+
+  double endBottomPercent = 0;
+  double endRightPercent = 0;
+  double pRightPercent = 0.0;
+  double pBottomPercent = 0.0;
+  double iconWidth = 0.0;
+  double iconHeight = 0.0;
+
   @override
   void initState() {
     super.initState();
+
+    /// used to locate the [icon] widget so as to center icon and label
+    ///
+    /// Below method calculates the center of screen accurately and optimizes animation accordingly.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      RenderBox box = iconKey.currentContext.findRenderObject();
+      double screenWidth = getWidth(context);
+      double screenHeight = getHeight(context);
+      iconWidth = box.size.width;
+      iconHeight = box.size.height;
+      endRightPercent = ((screenWidth - iconWidth) / screenWidth * 100);
+      endBottomPercent = ((screenHeight - iconHeight) / screenHeight * 100);
+      pRightPercent = ((screenWidth - max(screenHeight, screenWidth) * 0.1) /
+          screenWidth *
+          100);
+      pBottomPercent = ((screenHeight - max(screenHeight, screenWidth) * 0.1) /
+          screenHeight *
+          100);
+      if (!widget.onlyIcon) {
+        iconAnimation = getIconAnimation(screenWidth, screenHeight);
+        labelAnimation = getLabelAnimation(screenWidth, screenHeight);
+      }
+      setState(() {});
+    });
+
     loading = false;
     initAnimation = false;
     completed = false;
+
     iconController =
         AnimationController(vsync: this, duration: widget.iconDuration);
+    iconAnimation = Tween<double>(begin: 0, end: 0).animate(iconController);
+
     labelController =
         AnimationController(vsync: this, duration: widget.labelDuration);
-    iconAnimation = Tween<double>(begin: 0, end: 0).animate(iconController);
     labelAnimation = Tween<double>(begin: 0, end: 0).animate(labelController);
+
+    /// listener added for [iconAnimation]
     iconAnimation.addListener(() async {
       if (iconAnimation.isCompleted) {
         if (widget.onlyIcon) {
@@ -131,6 +185,8 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
       }
       setState(() {});
     });
+
+    /// listener added for [labelAnimation]
     labelAnimation.addListener(() async {
       if (labelAnimation.isCompleted) {
         if (this.widget.screenFunction == null) {
@@ -161,348 +217,278 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
     labelController.dispose();
   }
 
-  getAnimation1(double width, double height) {
+  getIconAnimation(double width, double height) {
+    double screenHorizontalCenter = width * endRightPercent * 0.01 * 0.5;
+    double screenVerticalCenter = height * endBottomPercent * 0.01 * 0.5;
     if (widget.iconDirection == SplashScreenDirection.TTB) {
       return Tween<double>(
         begin: 0,
-        end: height * 0.40,
+        end: screenVerticalCenter,
       ).animate(iconController);
     } else if (widget.iconDirection == SplashScreenDirection.BTT) {
       return Tween<double>(
-        begin: height,
-        end: height * 0.40,
+        begin: screenVerticalCenter * 2,
+        end: screenVerticalCenter,
       ).animate(iconController);
     } else if (widget.iconDirection == SplashScreenDirection.LTR) {
       return Tween<double>(
         begin: 0,
-        end: width * 0.35,
+        end: screenHorizontalCenter,
       ).animate(iconController);
     } else if (widget.iconDirection == SplashScreenDirection.RTL) {
       return Tween<double>(
-        begin: width,
-        end: width * 0.35,
+        begin: screenHorizontalCenter * 2,
+        end: screenHorizontalCenter,
       ).animate(iconController);
     }
   }
 
-  getAnimation2(double width, double height) {
+  getLabelAnimation(double width, double height) {
+    double halfIconWidth = iconWidth * 0.5;
+    double val1 = halfIconWidth * 1.5;
+    double halfIconHeight = iconHeight * 0.5;
+    double val2 = halfIconHeight * 1.5;
     if (widget.labelDirection == SplashScreenDirection.LTR) {
       return Tween<double>(
-        begin: width * 0.35,
-        end: width * 0.20,
+        begin: 0,
+        end: val1,
       ).animate(labelController);
     } else if (widget.labelDirection == SplashScreenDirection.RTL) {
       return Tween<double>(
-        begin: width * 0.35,
-        end: width * 0.20,
+        begin: 0,
+        end: val1,
       ).animate(labelController);
     } else if (widget.labelDirection == SplashScreenDirection.TTB) {
       return Tween<double>(
-        begin: height * 0.35,
-        end: height * 0.50,
+        begin: 0,
+        end: val2,
       ).animate(labelController);
     } else if (widget.labelDirection == SplashScreenDirection.BTT) {
       return Tween<double>(
-        begin: height * 0.35,
-        end: height * 0.25,
+        begin: 0,
+        end: val2,
       ).animate(labelController);
     }
   }
 
   getWidget1(double width, double height) {
+    double screenHorizontalCenter = width * endRightPercent * 0.01 * 0.5;
+    double screenVerticalCenter = height * endBottomPercent * 0.01 * 0.5;
     if (widget.labelDirection == SplashScreenDirection.LTR) {
       return Positioned(
-        left: !completed ? width * 0.35 : width * 0.70 - labelAnimation.value,
-        top: height * 0.40,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: !completed
+            ? screenHorizontalCenter
+            : screenHorizontalCenter + labelAnimation.value,
+        top: screenVerticalCenter,
+        child: labelWidget(height, width),
       );
     } else if (widget.labelDirection == SplashScreenDirection.RTL) {
       return Positioned(
-        left: !completed ? width * 0.35 : labelAnimation.value,
-        top: height * 0.40,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: !completed
+            ? screenHorizontalCenter
+            : screenHorizontalCenter - labelAnimation.value,
+        top: screenVerticalCenter,
+        child: labelWidget(height, width),
       );
     } else if (widget.labelDirection == SplashScreenDirection.TTB) {
       return Positioned(
-        left: width * 0.35,
-        top: labelAnimation.value,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: screenHorizontalCenter,
+        top: screenVerticalCenter + labelAnimation.value,
+        child: labelWidget(height, width),
       );
     } else if (widget.labelDirection == SplashScreenDirection.BTT) {
       return Positioned(
-        left: width * 0.35,
-        top: labelAnimation.value,
-        child: AnimatedOpacity(
-          duration: Duration(milliseconds: 800),
-          opacity: completed ? 1 : 0,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            child: Center(
-              child: Text(this.widget.label, style: this.widget.labelStyle),
-            ),
-          ),
-        ),
+        left: screenHorizontalCenter,
+        top: screenVerticalCenter - labelAnimation.value,
+        child: labelWidget(height, width),
       );
     }
   }
 
+  /// Returns the widget which contains [label]
+  AnimatedOpacity labelWidget(double h, double w) {
+    return AnimatedOpacity(
+      duration: Duration(milliseconds: 800),
+      opacity: completed ? 1 : 0,
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: max(h, w) * 0.1,
+          minWidth: max(h, w) * 0.1,
+        ),
+        height: iconHeight,
+        width: iconWidth,
+        child: Center(
+          child: Text(this.widget.label, style: this.widget.labelStyle),
+        ),
+      ),
+    );
+  }
+
   getWidget2(double width, double height) {
+    double screenHorizontalCenter = width * endRightPercent * 0.01 * 0.5;
+    double screenVerticalCenter = height * endBottomPercent * 0.01 * 0.5;
     if (widget.iconDirection == SplashScreenDirection.TTB) {
       if (widget.labelDirection == SplashScreenDirection.LTR) {
         return Positioned(
-          left: !completed ? width * 0.35 : labelAnimation.value,
+          left: !completed
+              ? screenHorizontalCenter
+              : screenHorizontalCenter - labelAnimation.value,
           top: iconAnimation.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.RTL) {
         return Positioned(
-          left: !completed ? width * 0.35 : width * 0.70 - labelAnimation.value,
+          left: !completed
+              ? screenHorizontalCenter
+              : screenHorizontalCenter + labelAnimation.value,
           top: iconAnimation.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.TTB) {
         return Positioned(
-          left: width * 0.35,
+          left: screenHorizontalCenter,
           top: !completed
               ? iconAnimation.value
-              : iconAnimation.value -
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              : screenVerticalCenter - labelAnimation.value,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.BTT) {
         return Positioned(
-          left: width * 0.35,
+          left: screenHorizontalCenter,
           top: !completed
               ? iconAnimation.value
-              : iconAnimation.value +
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              : screenVerticalCenter + labelAnimation.value,
+          child: iconWidget(height, width),
         );
       }
     } else if (widget.iconDirection == SplashScreenDirection.BTT) {
       if (widget.labelDirection == SplashScreenDirection.LTR) {
         return Positioned(
-          left: !completed ? width * 0.35 : labelAnimation.value,
+          left: !completed
+              ? screenHorizontalCenter
+              : screenHorizontalCenter - labelAnimation.value,
           top: iconAnimation.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.RTL) {
         return Positioned(
-          left: !completed ? width * 0.35 : width * 0.70 - labelAnimation.value,
+          left: !completed
+              ? screenHorizontalCenter
+              : screenHorizontalCenter + labelAnimation.value,
           top: iconAnimation.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.TTB) {
         return Positioned(
-          left: width * 0.35,
+          left: screenHorizontalCenter,
           top: !completed
               ? iconAnimation.value
-              : iconAnimation.value -
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              : screenVerticalCenter - labelAnimation.value,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.BTT) {
         return Positioned(
-          left: width * 0.35,
+          left: screenHorizontalCenter,
           top: !completed
               ? iconAnimation.value
-              : iconAnimation.value +
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              : screenVerticalCenter + labelAnimation.value,
+          child: iconWidget(height, width),
         );
       }
     } else if (widget.iconDirection == SplashScreenDirection.LTR) {
       if (widget.labelDirection == SplashScreenDirection.LTR) {
         return Positioned(
-          left: !completed ? iconAnimation.value : labelAnimation.value,
-          top: height * 0.4,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+          left: !completed
+              ? iconAnimation.value
+              : screenHorizontalCenter - labelAnimation.value,
+          top: screenVerticalCenter,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.RTL) {
         return Positioned(
           left: !completed
               ? iconAnimation.value
-              : width * 0.70 - labelAnimation.value,
-          top: height * 0.4,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              : screenHorizontalCenter + labelAnimation.value,
+          top: screenVerticalCenter,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.TTB) {
         return Positioned(
           left: iconAnimation.value,
           top: !completed
-              ? height * 0.40
-              : height * 0.40 -
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              ? screenVerticalCenter
+              : screenVerticalCenter - labelAnimation.value,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.BTT) {
         return Positioned(
           left: iconAnimation.value,
           top: !completed
-              ? height * 0.40
-              : height * 0.40 +
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              ? screenVerticalCenter
+              : screenVerticalCenter + labelAnimation.value,
+          child: iconWidget(height, width),
         );
       }
     } else if (widget.iconDirection == SplashScreenDirection.RTL) {
       if (widget.labelDirection == SplashScreenDirection.LTR) {
         return Positioned(
-          left: !completed ? iconAnimation.value : labelAnimation.value,
-          top: height * 0.4,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+          left: !completed
+              ? iconAnimation.value
+              : screenHorizontalCenter - labelAnimation.value,
+          top: screenVerticalCenter,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.RTL) {
         return Positioned(
           left: !completed
               ? iconAnimation.value
-              : width * 0.70 - labelAnimation.value,
-          top: height * 0.4,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              : screenHorizontalCenter + labelAnimation.value,
+          top: screenVerticalCenter,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.TTB) {
         return Positioned(
           left: iconAnimation.value,
           top: !completed
-              ? height * 0.40
-              : height * 0.40 -
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              ? screenVerticalCenter
+              : screenVerticalCenter - labelAnimation.value,
+          child: iconWidget(height, width),
         );
       } else if (widget.labelDirection == SplashScreenDirection.BTT) {
         return Positioned(
           left: iconAnimation.value,
           top: !completed
-              ? height * 0.40
-              : height * 0.40 +
-                  labelAnimation.value * 0.15 * labelController.value,
-          child: Container(
-            height: width * 0.3,
-            width: width * 0.3,
-            color: widget.backgroundColor ?? Colors.white,
-            child: this.widget.icon,
-          ),
+              ? screenVerticalCenter
+              : screenVerticalCenter + labelAnimation.value,
+          child: iconWidget(height, width),
         );
       }
     }
+  }
+
+  /// Returns the widget which contains [icon]
+  Container iconWidget(double h, double w) {
+    return Container(
+      key: iconKey,
+      constraints: BoxConstraints(
+        minHeight: max(h, w) * 0.1,
+        minWidth: max(h, w) * 0.1,
+      ),
+      color: widget.backgroundColor ?? Colors.white,
+      child: this.widget.icon,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     double width = getWidth(context);
     double height = getHeight(context);
+
     if (!initAnimation) {
       initAnimation = true;
-      iconAnimation = getAnimation1(width, height);
-      labelAnimation = getAnimation2(width, height);
       iconController.forward();
     }
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: widget.backgroundColor ?? Colors.white,
@@ -516,22 +502,22 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
                 width: width,
               ),
               Positioned(
-                bottom: height * 0.15,
-                left: width * 0.40,
+                bottom: height * pBottomPercent * 0.01 * 0.01,
+                left: width * pRightPercent * 0.5 * 0.01,
                 child: AnimatedCrossFade(
                   duration: Duration(milliseconds: 800),
                   firstChild: this.widget.screenLoader == null
                       ? SizedBox(
-                          height: height * 0.1,
-                          width: height * 0.1,
+                          height: max(width, height) * 0.1,
+                          width: max(width, height) * 0.1,
                           child: Center(
                             child: CircularProgressIndicator(),
                           ),
                         )
                       : this.widget.screenLoader,
                   secondChild: SizedBox(
-                    height: height * 0.1,
-                    width: height * 0.1,
+                    height: max(width, height) * 0.1,
+                    width: max(width, height) * 0.1,
                   ),
                   crossFadeState: loading
                       ? CrossFadeState.showFirst
@@ -539,7 +525,6 @@ class _LinearSplashScreenState extends State<LinearSplashScreen>
                 ),
               ),
               !widget.onlyIcon ? getWidget1(width, height) : SizedBox.shrink(),
-              getWidget1(width, height),
               getWidget2(width, height),
             ],
           ),

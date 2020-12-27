@@ -1,11 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-Orientation getOrientation(BuildContext context) {
-  /// Method to get orientation of device
-  return MediaQuery.of(context).orientation;
-}
-
 double getHeight(BuildContext context) {
   /// Method to get screen Height
   return MediaQuery.of(context).size.height;
@@ -18,18 +13,17 @@ double getWidth(BuildContext context) {
 
 ///Enum Representing Directions
 enum SplashScreenDirection {
+  /// LEFT-TO-RIGHT
   LTR,
 
-  /// LEFT-TO-RIGHT
+  /// RIGHT-TO-LEFT
   RTL,
 
-  /// RIGHT-TO-LEFT
+  /// TOP-TO-BOTTOM
   TTB,
 
-  /// TOP-TO-BOTTOM
-  BTT,
-
   /// BOTTOM-TO-TOP
+  BTT,
 }
 
 ///Enum Representing SplashPageTransistions
